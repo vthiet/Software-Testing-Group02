@@ -1,0 +1,21 @@
+{
+  "name": "group02-mahocommerce-testing-old",
+  "version": "1.0.0",
+  "description": "Dự án chứa các script kiểm thử tự động (end-to-end) cho trang web **MahoCommerce**, được viết bằng [Playwright](https://playwright.dev/) (Playwright Test).",
+  "main": "index.js",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vthiet/group02-mahocommerce-testing.git"
+  },
+  "keywords": [],
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/vthiet/group02-mahocommerce-testing/issues"
+  },
+  "homepage": "https://github.com/vthiet/group02-mahocommerce-testing#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.65.1",
+    "@types/node": "^26.6.6"
+  }
+}
