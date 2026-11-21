@@ -1,46 +1,46 @@
-# Test Design Matrix: Promotion Rule Engine (MahoCommerce)
+# Ma trận thiết kế kiểm thử: Công cụ quy tắc khuyến mãi (Promotion Rule Engine - MahoCommerce)
 
-**Project:** MahoCommerce Automation Testing  
-**Tool Target:** Playwright (TypeScript)  
-**Environment:** Local MahoCommerce project in `maho/`  
-**Module:** Catalog Price Rule Evaluation and Automatic Cart Rule Evaluation  
-**Methodology:** Equivalence Partitioning (EP), Boundary Value Analysis (BVA), Decision Table, State Transition, End-to-End
+**Dự án:** MahoCommerce Automation Testing  
+**Công cụ mục tiêu:** Playwright (TypeScript)  
+**Môi trường:** Dự án MahoCommerce cục bộ tại `maho/`  
+**Phân hệ (Module):** Đánh giá quy tắc giá danh mục (Catalog Price Rule Evaluation) và Đánh giá quy tắc giỏ hàng tự động (Automatic Cart Rule Evaluation)  
+**Phương pháp kiểm thử:** Phân vùng tương đương (EP), Phân tích giá trị biên (BVA), Bảng quyết định (Decision Table), Chuyển trạng thái (State Transition), Đầu cuối (End-to-End)
 
-> Scope focuses on rule evaluation and precedence. Coupon creation, coupon field validation, coupon input trimming/security, and generic coupon apply/remove flows belong to the Group 02 Coupon feature and are not duplicated here.
+> Phạm vi kiểm thử tập trung vào việc đánh giá điều kiện và độ ưu tiên của quy tắc khuyến mãi. Việc tạo coupon, kiểm tra hợp lệ các trường coupon, cắt tỉa khoảng trắng/bảo mật mã coupon và luồng áp dụng/hủy coupon nói chung thuộc về tính năng Mã giảm giá (Coupon) của Nhóm 02 và không lặp lại tại đây.
 
-## 1. Test Matrix / Test Design Table
+## 1. Ma trận kiểm thử / Bảng thiết kế kiểm thử (Test Matrix / Test Design Table)
 
-| Requirement Level 1 | Requirement Level 2 | Requirement Level 3 | Test Criteria (Test Case Description) | Test Type | Note / Automation Strategy (Playwright) |
+| Yêu cầu cấp 1 | Yêu cầu cấp 2 | Yêu cầu cấp 3 | Tiêu chí kiểm thử (Mô tả Test Case) | Loại kiểm thử | Ghi chú / Chiến lược tự động hóa (Playwright) |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **3. Promotion Rule Evaluation** | **3.1 Catalog Price Rule Eligibility** | Website scope match | Verify active rule changes price on assigned website but does not change price on a website outside its scope. | E2E | Use same fixture product assigned to two websites/store views; compare rendered prices. |
-|  |  | Customer group scope | Verify rule applies to targeted customer group and not to a non-target group. | E2E | Use guest vs logged-in customer contexts configured for distinct groups. |
-|  |  | Active date lower boundary | Verify rule is eligible on its configured start date in store timezone. | BVA | Freeze/setup date safely; assert localized storefront amount. |
-|  |  | Active date upper boundary | Verify rule is eligible through configured end date and inactive after it. | BVA | Test boundary dates independently; avoid dependence on wall-clock rollover. |
-|  |  | Inactive rule | Verify disabled catalog rule has no effect even when product/customer/date conditions match. | Negative | Compare baseline price to post-disable price after rule application/indexing. |
-|  |  | Product condition match | Rule condition for attribute A changes only fixture products matching A. | Decision Table | One matching and one nonmatching product; assert both PDP prices. |
-|  |  | Category condition match | Category-scoped rule affects assigned product and excludes a similar unassigned product. | E2E | Seed explicit category/product assignments; avoid sample category IDs. |
-|  | **3.2 Catalog Price Calculation & Precedence** | Percentage discount calculation | Verify percentage action yields expected effective price from regular price. | BVA | Choose price divisible to avoid fractional ambiguity; assert currency-rounded amount. |
-|  |  | Fixed amount discount | Verify fixed amount action reduces eligible price by configured amount, subject to rule semantics. | Function | Include a price greater than discount; assert displayed regular/special pricing. |
-|  |  | Discount lower boundary | Configure discount zero and verify effective price remains baseline. | BVA | Confirm zero is accepted by local rule form before asserting. |
-|  |  | Discount upper boundary | Configure maximum supported discount and verify price does not become negative. | BVA | Determine accepted maximum from form/engine; keep expected behavior specific to Maho. |
-|  |  | Rule priority | Apply two eligible rules with distinct discounts and verify lower numeric priority wins according to local Maho ordering. | Decision Table | Isolate product and customer group; confirm actual ordering before locking expected amount. |
-|  |  | Discard subsequent catalog rules | With first rule's discard flag enabled, verify whether lower-priority eligible rule is skipped. | Decision Table | This is a capability-confirmation case; expected result must be confirmed on installed Maho version. |
-|  |  | Reapply after rule edit | Change discount amount and apply/reindex; verify storefront updates from old to new effective price. | State Transition | Assert eventual UI value with bounded polling, not fixed sleep. |
-|  |  | Rule deletion | Delete a rule and verify the product returns to the baseline price after rule/index refresh. | State Transition | Unique test rule; do not assert only that Admin row disappeared. |
-|  | **3.3 Automatic Cart Rule Conditions** | Subtotal threshold below/at/above | Verify automatic discount behavior at threshold − smallest currency unit, exactly threshold, and threshold + smallest unit. | BVA | Use products that produce exact totals; assert discount amount for each isolated cart. |
-|  |  | Item quantity threshold | Verify eligibility at quantity N−1 and N for a quantity-based condition. | BVA | Change only quantity; assert UI discount appears at expected boundary. |
-|  |  | Category eligibility in mixed cart | Verify matching item receives rule treatment while nonmatching line remains unchanged. | Decision Table | Assert line-level discount allocation where exposed; otherwise compare controlled cart totals. |
-|  |  | Stop processing rules | Apply two automatic rules with distinct effects; verify later rule is skipped when earlier matching rule has stop-processing enabled. | Decision Table | Separate unique rules, explicit priority, clean cart; verify actual engine behavior locally. |
-|  |  | Rule stacking without stop | Apply two compatible rules and verify cumulative result follows configured priority/action semantics. | Decision Table | Keep expected amount calculable; do not infer stacking from another platform. |
-|  | **3.4 Cart Rule Actions** | Whole-cart fixed discount cap | Verify fixed discount does not exceed eligible cart amount for a cart below the configured discount. | BVA | Use low-priced eligible item; confirm no negative line/grand total. |
-|  |  | Buy X Get Y quantity boundary | For Buy 2 Get 1, verify 2 units earn no free unit and 3 units earn exactly one. | BVA | Use automatic rule and one eligible SKU; inspect line discount/total. |
-|  |  | Free-shipping action | Verify eligible rule sets shipping to zero for a supported shipping method and leaves merchandise subtotal unchanged. | E2E | Configure deterministic physical item and rate; do not assume per-item waiver semantics. |
-|  |  | Discount with tax | Verify cart discount and tax totals are consistent with configured tax calculation mode. | Function | Parameterize expected tax behavior from store setup; compare rendered component totals. |
+| **3. Đánh giá quy tắc khuyến mãi** | **3.1 Tính đủ điều kiện của quy tắc giá danh mục (Catalog Price Rule)** | Khớp phạm vi website | Xác minh quy tắc đang hoạt động thay đổi giá trên website được chỉ định nhưng không thay đổi giá trên website nằm ngoài phạm vi. | E2E | Dùng cùng một sản phẩm fixture gán cho 2 website/store view; so sánh giá hiển thị trên giao diện. |
+|  |  | Phạm vi nhóm khách hàng | Xác minh quy tắc chỉ áp dụng cho nhóm khách hàng mục tiêu và không áp dụng cho nhóm khách hàng khác. | E2E | Sử dụng context khách vãng lai (guest) so với khách hàng đã đăng nhập thuộc các nhóm riêng biệt. |
+|  |  | Giá trị biên dưới của ngày hiệu lực | Xác minh quy tắc đủ điều kiện áp dụng vào đúng ngày bắt đầu được cấu hình theo múi giờ cửa hàng. | Phân tích giá trị biên (BVA) | Cố định/thiết lập ngày an toàn; kiểm tra số tiền hiển thị cục bộ trên storefront. |
+|  |  | Giá trị biên trên của ngày hiệu lực | Xác minh quy tắc đủ điều kiện áp dụng cho đến hết ngày kết thúc đã cấu hình và không còn hiệu lực sau ngày đó. | Phân tích giá trị biên (BVA) | Kiểm tra các ngày biên độc lập; tránh phụ thuộc vào việc chuyển giao thời gian thực của đồng hồ hệ thống. |
+|  |  | Quy tắc không hoạt động (Inactive) | Xác minh quy tắc giá danh mục bị tắt không có tác dụng ngay cả khi các điều kiện sản phẩm/khách hàng/ngày tháng đều khớp. | Phủ định (Negative) | So sánh giá cơ sở với giá sau khi tắt quy tắc sau khi áp dụng quy tắc/đánh chỉ mục (indexing). |
+|  |  | Khớp điều kiện thuộc tính sản phẩm | Điều kiện quy tắc theo thuộc tính A chỉ thay đổi giá các sản phẩm fixture khớp với A. | Bảng quyết định (Decision Table) | Một sản phẩm khớp và một sản phẩm không khớp; kiểm tra giá trên cả hai trang PDP. |
+|  |  | Khớp điều kiện danh mục | Quy tắc theo phạm vi danh mục chỉ tác động lên sản phẩm được gán và loại trừ sản phẩm tương tự không được gán vào danh mục. | E2E | Thiết lập gán danh mục/sản phẩm rõ ràng; tránh dùng ID danh mục mẫu có sẵn. |
+|  | **3.2 Tính toán & Mức độ ưu tiên của giá danh mục (Catalog Price Calculation & Precedence)** | Tính toán giảm giá theo phần trăm | Xác minh hành động giảm giá theo phần trăm tính ra đúng giá thực tế từ giá thông thường. | Phân tích giá trị biên (BVA) | Chọn mức giá chia hết để tránh nhập nhằng số thập phân; kiểm tra số tiền làm tròn theo tiền tệ. |
+|  |  | Giảm giá theo số tiền cố định | Xác minh hành động giảm số tiền cố định giảm giá đủ điều kiện đúng theo số tiền đã cấu hình, theo ngữ nghĩa của quy tắc. | Chức năng (Function) | Chọn mức giá lớn hơn số tiền giảm; kiểm tra hiển thị giá thông thường/giá khuyến mãi. |
+|  |  | Giá trị biên dưới của mức giảm giá | Cấu hình mức giảm giá bằng 0 và xác minh giá thực tế giữ nguyên giá cơ sở ban đầu. | Phân tích giá trị biên (BVA) | Xác nhận mức 0 được form quy tắc cục bộ chấp nhận trước khi kiểm tra. |
+|  |  | Giá trị biên trên của mức giảm giá | Cấu hình mức giảm giá tối đa được hỗ trợ và xác minh giá không bị chuyển thành số âm. | Phân tích giá trị biên (BVA) | Xác định mức tối đa được chấp nhận từ form/hệ thống; giữ hành vi mong đợi phù hợp với Maho. |
+|  |  | Độ ưu tiên của quy tắc (Priority) | Áp dụng hai quy tắc cùng hợp lệ với mức giảm khác nhau và xác minh quy tắc có số ưu tiên nhỏ hơn sẽ được áp dụng theo thứ tự của Maho cục bộ. | Bảng quyết định (Decision Table) | Cô lập sản phẩm và nhóm khách hàng; xác nhận thứ tự thực tế trước khi chốt số tiền mong đợi. |
+|  |  | Bỏ qua các quy tắc danh mục tiếp theo (Discard subsequent) | Khi cờ bỏ qua quy tắc tiếp theo của quy tắc đầu tiên được bật, xác minh quy tắc hợp lệ có độ ưu tiên thấp hơn có bị bỏ qua hay không. | Bảng quyết định (Decision Table) | Đây là ca kiểm tra xác nhận tính năng; kết quả mong đợi phải được kiểm chứng trên phiên bản Maho đã cài đặt. |
+|  |  | Áp dụng lại sau khi chỉnh sửa quy tắc | Thay đổi số tiền giảm giá và áp dụng/đánh chỉ mục lại; xác minh storefront cập nhật từ giá thực tế cũ sang giá mới. | Chuyển trạng thái (State Transition) | Kiểm tra giá trị giao diện sau cùng bằng cơ chế thăm dò có giới hạn thời gian (bounded polling), không dùng sleep cố định. |
+|  |  | Xóa quy tắc | Xóa một quy tắc và xác minh sản phẩm trở lại giá cơ sở ban đầu sau khi làm mới quy tắc/chỉ mục. | Chuyển trạng thái (State Transition) | Dùng quy tắc kiểm thử duy nhất; không chỉ kiểm tra việc hàng trong Admin biến mất. |
+|  | **3.3 Điều kiện quy tắc giỏ hàng tự động (Automatic Cart Rule Conditions)** | Ngưỡng tổng phụ (Subtotal) dưới/đúng/trên ngưỡng | Xác minh hành vi giảm giá tự động tại ngưỡng − đơn vị tiền tệ nhỏ nhất, đúng ngưỡng, và ngưỡng + đơn vị nhỏ nhất. | Phân tích giá trị biên (BVA) | Dùng các sản phẩm tạo ra tổng tiền chính xác; kiểm tra số tiền giảm giá cho từng giỏ hàng cô lập. |
+|  |  | Ngưỡng số lượng sản phẩm (Item quantity) | Xác minh tính đủ điều kiện tại số lượng N−1 và N cho điều kiện dựa trên số lượng. | Phân tích giá trị biên (BVA) | Chỉ thay đổi số lượng; kiểm tra giảm giá xuất hiện trên giao diện đúng tại giá trị biên. |
+|  |  | Điều kiện danh mục trong giỏ hàng hỗn hợp | Xác minh sản phẩm khớp điều kiện nhận được mức giảm giá trong khi sản phẩm không khớp vẫn giữ nguyên. | Bảng quyết định (Decision Table) | Kiểm tra phân bổ giảm giá ở cấp từng dòng sản phẩm nếu có hiển thị; nếu không hãy so sánh tổng tiền giỏ hàng có kiểm soát. |
+|  |  | Dừng xử lý các quy tắc sau (Stop processing rules) | Áp dụng hai quy tắc tự động với tác dụng khác nhau; xác minh quy tắc sau bị bỏ qua khi quy tắc khớp trước đó bật cờ dừng xử lý. | Bảng quyết định (Decision Table) | Dùng các quy tắc riêng biệt duy nhất, thứ tự ưu tiên rõ ràng, giỏ hàng sạch; xác minh hành vi thực tế của hệ thống cục bộ. |
+|  |  | Cộng dồn quy tắc khi không bật dừng xử lý | Áp dụng hai quy tắc tương thích và xác minh kết quả tích lũy tuân theo ngữ nghĩa ưu tiên/hành động đã cấu hình. | Bảng quyết định (Decision Table) | Đảm bảo số tiền dự kiến có thể tính toán được; không suy diễn việc cộng dồn từ nền tảng khác. |
+|  | **3.4 Hành động của quy tắc giỏ hàng (Cart Rule Actions)** | Giới hạn mức giảm giá cố định cho toàn bộ giỏ hàng | Xác minh mức giảm giá cố định không vượt quá số tiền hợp lệ của giỏ hàng khi giỏ hàng có giá trị thấp hơn mức giảm. | Phân tích giá trị biên (BVA) | Sử dụng sản phẩm hợp lệ giá thấp; xác nhận dòng sản phẩm/tổng tiền cuối cùng không bị âm. |
+|  |  | Giá trị biên số lượng Mua X Tặng Y (Buy X Get Y) | Với quy tắc Mua 2 Tặng 1, xác minh 2 đơn vị không nhận được sản phẩm miễn phí và 3 đơn vị nhận đúng một sản phẩm miễn phí. | Phân tích giá trị biên (BVA) | Dùng quy tắc tự động và một SKU hợp lệ; kiểm tra mức giảm/tổng tiền của dòng sản phẩm. |
+|  |  | Hành động miễn phí vận chuyển (Free shipping) | Xác minh quy tắc hợp lệ đặt phí vận chuyển về 0 cho phương thức vận chuyển được hỗ trợ và giữ nguyên tổng phụ tiền hàng. | E2E | Cấu hình sản phẩm vật lý và mức phí rõ ràng; không giả định ngữ nghĩa miễn phí trên từng sản phẩm. |
+|  |  | Giảm giá kết hợp với thuế | Xác minh tổng giảm giá và thuế trong giỏ hàng nhất quán với chế độ tính thuế được cấu hình. | Chức năng (Function) | Tham số hóa hành vi thuế mong đợi từ thiết lập cửa hàng; so sánh các tổng thành phần hiển thị. |
 
-## 2. Playwright Automation Guidelines
+## 2. Hướng dẫn tự động hóa với Playwright (Playwright Automation Guidelines)
 
-1. Build rules and products as run-scoped fixtures; set website, customer groups, dates, conditions, action, priority, and status explicitly. Clean up rules and carts after each test.
-2. For each eligibility rule, use a positive and negative control in the same configuration. For threshold rules, cover below/at/above values using the smallest supported currency unit.
-3. Use storefront price and cart total components as the oracle. Admin success notifications and database rows do not prove rule evaluation.
-4. Refresh/reindex through supported local setup before storefront assertions. Poll for the expected rendered amount with a bounded timeout.
-5. Rule priority, discard/stop behavior, tax interaction, and free-shipping granularity must be characterized against Maho 26.9.3 in `maho/`; do not assume Magento behavior without confirmation.
+1. Xây dựng các quy tắc và sản phẩm dưới dạng fixture trong phạm vi từng lượt chạy; thiết lập rõ ràng website, nhóm khách hàng, ngày tháng, điều kiện, hành động, mức ưu tiên và trạng thái. Dọn dẹp quy tắc và giỏ hàng sau mỗi bài kiểm thử.
+2. Với mỗi quy tắc kiểm tra điều kiện hợp lệ, sử dụng một nhóm đối chứng dương (khớp) và đối chứng âm (không khớp) trong cùng cấu hình. Với các quy tắc theo ngưỡng, bao phủ các giá trị dưới/đúng/trên ngưỡng bằng đơn vị tiền tệ nhỏ nhất được hỗ trợ.
+3. Sử dụng giá trên storefront và các thành phần tổng tiền giỏ hàng làm cơ sở kiểm chứng kết quả (oracle). Thông báo thành công trong Admin và các bản ghi trong cơ sở dữ liệu không chứng minh được quy tắc đã được đánh giá hiển thị đúng trên giao diện.
+4. Làm mới/đánh chỉ mục lại (reindex) qua thiết lập cục bộ được hỗ trợ trước khi kiểm tra trên storefront. Thăm dò giá trị mong đợi được hiển thị kèm thời gian chờ có giới hạn (bounded timeout).
+5. Mức độ ưu tiên của quy tắc, hành vi discard/stop, tương tác thuế và mức độ chi tiết của miễn phí vận chuyển phải được kiểm chứng trực tiếp trên Maho 26.9.3 trong thư mục `maho/`; không tự ý áp đặt hành vi của Magento khi chưa được xác nhận.

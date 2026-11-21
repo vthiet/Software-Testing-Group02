@@ -1,46 +1,46 @@
-# Test Design Matrix: Category & Configurable Product Catalog (MahoCommerce)
+# Ma trận thiết kế kiểm thử: Danh mục & Sản phẩm cấu hình (Category & Configurable Product Catalog - MahoCommerce)
 
-**Project:** MahoCommerce Automation Testing  
-**Tool Target:** Playwright (TypeScript)  
-**Environment:** Local MahoCommerce project in `maho/`  
-**Module:** Admin Category Tree, Configurable Product Variants, Storefront Variant Selection  
-**Methodology:** Equivalence Partitioning (EP), Boundary Value Analysis (BVA), State Transition, End-to-End
+**Dự án:** MahoCommerce Automation Testing  
+**Công cụ mục tiêu:** Playwright (TypeScript)  
+**Môi trường:** Dự án MahoCommerce cục bộ tại `maho/`  
+**Phân hệ (Module):** Cây danh mục Admin, Biến thể sản phẩm cấu hình, Lựa chọn biến thể trên Storefront  
+**Phương pháp kiểm thử:** Phân vùng tương đương (EP), Phân tích giá trị biên (BVA), Chuyển trạng thái (State Transition), Đầu cuối (End-to-End)
 
-> Scope deliberately excludes generic product CRUD, product grid search/sorting, simple product validation, and general storefront search; those are covered by other Group 02 assignments. Detailed specs are references for prerequisites and expected local wording, not a required one-to-one case list.
+> Phạm vi kiểm thử chủ động loại trừ các thao tác CRUD sản phẩm chung, tìm kiếm/sắp xếp trên bảng sản phẩm, xác thực sản phẩm đơn giản (simple product) và tìm kiếm chung trên storefront; những phần đó đã được phân công cho các thành viên khác trong Nhóm 02. Các đặc tả chi tiết dùng để tham chiếu tiền điều kiện và câu chữ thực tế tại môi trường local, không phải là danh sách ca kiểm thử bắt buộc ánh xạ 1-1.
 
-## 1. Test Matrix / Test Design Table
+## 1. Ma trận kiểm thử / Bảng thiết kế kiểm thử (Test Matrix / Test Design Table)
 
-| Requirement Level 1 | Requirement Level 2 | Requirement Level 3 | Test Criteria (Test Case Description) | Test Type | Note / Automation Strategy (Playwright) |
+| Yêu cầu cấp 1 | Yêu cầu cấp 2 | Yêu cầu cấp 3 | Tiêu chí kiểm thử (Mô tả Test Case) | Loại kiểm thử | Ghi chú / Chiến lược tự động hóa (Playwright) |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **1. Catalog Structure & Variant Selection** | **1.1 Category Tree** | Root and nested tree rendering | Verify a category at depth 3 is shown under the correct parent chain in Admin. | Function | Create unique root/child/leaf fixtures; assert tree ancestry by locator containment, not indentation pixels. |
-|  |  | Sibling ordering | Create two children with distinct positions and verify storefront/admin ordering follows configured position. | Function | Set position fields in fixture setup; assert rendered labels sequence. |
-|  |  | Move category to another parent | Change a leaf category's parent and verify it leaves the old branch and appears under the new branch. | State Transition | Reopen tree after save; assert exactly one occurrence and expected ancestry. |
-|  |  | Disable parent branch | Disable a parent that has an active child; verify neither branch is navigable from storefront menus. | End-to-End | Use generated category URL/menu link; distinguish hidden navigation from direct URL behavior. |
-|  |  | Re-enable category | Re-enable the same category and verify it returns to the storefront navigation after refresh/index update. | State Transition | Assert Admin active state and storefront presence; no fixed delay. |
-|  |  | Delete category with children | Attempt deletion of a non-leaf category and verify the application blocks it or applies the observed documented behavior without orphaning descendants. | Negative | Use disposable tree; assert user-visible result and tree integrity. |
-|  |  | Delete category assigned products | Delete a category containing assigned fixtures; verify product records remain and category assignment behavior is consistent. | Function | Confirm product still opens by direct PDP; do not assert database-only outcome. |
-|  |  | Category URL key change | Change URL key and verify old/new route behavior follows configured redirect/URL rewrite behavior. | End-to-End | Capture old route before edit; assert new route resolves to target category. |
-|  | **1.2 Configurable Attributes & Variants** | Attribute eligibility | Verify only attributes configured for global scope and configurable use are offered in the configurable-product wizard. | Function | Prepare one eligible and one ineligible dropdown attribute; inspect wizard choices. |
-|  |  | Missing required variant attribute | Attempt to create configurable parent without selecting a required configurable attribute. | Negative | Assert wizard validation and that no parent is saved. |
-|  |  | Variant combination coverage | Create parent with Color × Size variants and verify each valid combination is selectable. | E2E | Use unique fixture variants; select each option combination on PDP. |
-|  |  | Incomplete combination | Configure a matrix with one absent Color/Size combination; verify unavailable combination cannot be added to cart. | Negative | Check disabled/unavailable option state and prevent add-to-cart. |
-|  |  | Disabled child variant | Disable one associated simple child; verify it is not purchasable through the parent PDP while other children remain selectable. | E2E | Compare enabled and disabled child options in the same fixture. |
-|  |  | Out-of-stock child variant | Set one child to zero stock; verify only that selection is unavailable and an in-stock sibling remains purchasable. | E2E | Keep parent enabled and stocked; assert per-variant availability. |
-|  |  | Child image switch | Select a variant with a distinct assigned image and verify gallery image changes to the child's image. | E2E | Use visibly distinct fixture images and assert active image URL/alt. |
-|  |  | Option surcharge | Select an option with explicit configurable option price and verify displayed price changes by that surcharge. | BVA | Include zero-surcharge sibling as baseline; compare numeric minor units. |
-|  |  | Child price is not option surcharge | Set child simple product price differently but no parent option surcharge; verify parent price follows configurable pricing rules, not an assumed child-price substitution. | Function | Assert only after fixture configuration is confirmed in local Maho. |
-|  |  | Variant selection persistence | Select variant, change quantity, and verify selected options remain selected before adding to cart. | Function | Assert selected form values after quantity interaction. |
-|  |  | Add selected variant | Add a selected Color/Size combination and verify cart line identifies the chosen options. | E2E | Unique configurable SKU; assert cart item options, not just parent title. |
-|  |  | Listing swatch availability | Verify listing swatches appear only when enabled for the active store view and product has valid variants. | Configuration | Treat disabled config as a setup skip; assert swatch option changes target PDP selection. |
-|  |  | Parent without associated variants | Remove/unlink all variants and verify parent is not presented as purchasable. | Negative | Assert no valid option selection/add-to-cart path. |
-|  | **1.3 Category-to-Variant Integration** | Configurable listing assignment | Assign configurable parent to a nested active category and verify one parent card appears in that category listing. | E2E | Ensure parent visibility/indexing; assert no duplicate child cards. |
-|  |  | Disabled category direct URL | Open a disabled category URL directly and verify configured storefront response (not listed/redirect/not found) consistently. | Negative | Record local expected behavior before fixing assertion. |
-|  |  | Category breadcrumb hierarchy | Navigate nested category → configurable PDP and verify breadcrumb chain represents category ancestry. | E2E | Use menu navigation and assert breadcrumb labels in order. |
+| **1. Cấu trúc danh mục & Lựa chọn biến thể** | **1.1 Cây danh mục (Category Tree)** | Hiển thị cây danh mục gốc và lồng nhau | Kiểm tra danh mục ở độ sâu cấp 3 hiển thị đúng theo chuỗi danh mục cha trong Admin. | Chức năng (Function) | Tạo fixture danh mục gốc/con/lá duy nhất; xác nhận quan hệ phân cấp bằng cấu trúc DOM locator, không dựa vào pixel thụt đầu dòng. |
+|  |  | Thứ tự danh mục cùng cấp (Sibling ordering) | Tạo hai danh mục con với vị trí (position) khác nhau và xác minh thứ tự hiển thị trên Storefront/Admin tuân thủ đúng position đã cấu hình. | Chức năng (Function) | Thiết lập trường position trong fixture; kiểm tra thứ tự nhãn được hiển thị. |
+|  |  | Di chuyển danh mục sang danh mục cha khác | Thay đổi danh mục cha của một danh mục lá và xác minh nó rời khỏi nhánh cũ, xuất hiện dưới nhánh cha mới. | Chuyển trạng thái (State Transition) | Mở lại cây sau khi lưu; đảm bảo xuất hiện duy nhất một lần và đúng phả hệ mong đợi. |
+|  |  | Vô hiệu hóa nhánh danh mục cha | Vô hiệu hóa danh mục cha đang có danh mục con active; xác minh cả hai nhánh đều không thể điều hướng từ menu storefront. | Đầu cuối (End-to-End) | Sử dụng URL danh mục/link menu được tạo; phân biệt giữa việc ẩn menu và hành vi khi truy cập URL trực tiếp. |
+|  |  | Kích hoạt lại danh mục | Kích hoạt lại danh mục đã tắt và xác minh nó xuất hiện trở lại trên thanh điều hướng storefront sau khi làm mới/cập nhật chỉ mục (reindex). | Chuyển trạng thái (State Transition) | Kiểm tra trạng thái active trong Admin và sự hiện diện trên storefront; không dùng delay cố định. |
+|  |  | Xóa danh mục đang có danh mục con | Thử xóa một danh mục không phải là lá và xác minh hệ thống chặn thao tác hoặc thực hiện đúng hành vi đã tài liệu hóa mà không để lại con mồ côi. | Phủ định (Negative) | Sử dụng cây danh mục dùng một lần; kiểm tra kết quả trực quan hiển thị và tính toàn vẹn của cây. |
+|  |  | Xóa danh mục có gán sản phẩm | Xóa một danh mục có chứa các sản phẩm fixture được gán; xác minh dữ liệu sản phẩm vẫn tồn tại và hành vi gán danh mục nhất quán. | Chức năng (Function) | Xác nhận sản phẩm vẫn mở được qua URL PDP trực tiếp; không chỉ kiểm tra riêng trong database. |
+|  |  | Thay đổi URL key của danh mục | Đổi URL key và xác minh hành vi route cũ/mới tuân thủ đúng cấu hình chuyển hướng (redirect) hoặc ghi lại URL (URL rewrite). | Đầu cuối (End-to-End) | Ghi nhận route cũ trước khi sửa; xác nhận route mới điều hướng chính xác đến danh mục mục tiêu. |
+|  | **1.2 Thuộc tính cấu hình & Biến thể (Configurable Attributes & Variants)** | Điều kiện hợp lệ của thuộc tính | Xác minh chỉ các thuộc tính được cấu hình phạm vi Global và cho phép dùng làm configurable mới xuất hiện trong trình hướng dẫn tạo sản phẩm cấu hình. | Chức năng (Function) | Chuẩn bị một thuộc tính dropdown đủ điều kiện và một không đủ điều kiện; kiểm tra danh sách lựa chọn trong wizard. |
+|  |  | Thiếu thuộc tính biến thể bắt buộc | Thử tạo sản phẩm cha cấu hình mà không chọn thuộc tính configurable bắt buộc. | Phủ định (Negative) | Kiểm tra xác thực (validation) của wizard và đảm bảo không có sản phẩm cha nào được lưu. |
+|  |  | Độ bao phủ tổ hợp biến thể | Tạo sản phẩm cha với các biến thể Màu sắc (Color) × Kích thước (Size) và xác minh từng tổ hợp hợp lệ đều có thể chọn được. | E2E | Sử dụng các biến thể fixture duy nhất; chọn từng tổ hợp thuộc tính trên trang chi tiết sản phẩm (PDP). |
+|  |  | Tổ hợp biến thể không đầy đủ | Cấu hình ma trận cố ý thiếu một tổ hợp Color/Size; xác minh tổ hợp không khả dụng không thể thêm vào giỏ hàng. | Phủ định (Negative) | Kiểm tra trạng thái tùy chọn bị vô hiệu hóa/không khả dụng và ngăn chặn hành động thêm vào giỏ hàng. |
+|  |  | Biến thể con bị vô hiệu hóa | Vô hiệu hóa một sản phẩm con đơn giản liên kết; xác minh không thể mua nó qua trang PDP sản phẩm cha trong khi các biến thể con khác vẫn chọn được. | E2E | So sánh các tùy chọn sản phẩm con được kích hoạt và bị vô hiệu hóa trong cùng một fixture. |
+|  |  | Biến thể con hết hàng | Đặt số lượng tồn kho của một sản phẩm con về 0; xác minh chỉ lựa chọn đó không khả dụng, còn biến thể cùng cấp còn hàng vẫn mua được. | E2E | Giữ sản phẩm cha ở trạng thái kích hoạt và còn hàng; kiểm tra tình trạng khả dụng trên từng biến thể. |
+|  |  | Đổi ảnh theo biến thể con | Chọn một biến thể có gán hình ảnh riêng biệt và xác minh ảnh trong thư viện (gallery) chuyển sang ảnh của sản phẩm con đó. | E2E | Sử dụng các ảnh fixture khác biệt rõ ràng và kiểm tra URL/thuộc tính alt của ảnh đang hiển thị. |
+|  |  | Phụ phí tùy chọn (Option surcharge) | Chọn một tùy chọn có giá cấu hình phụ phí rõ ràng và xác minh giá hiển thị thay đổi đúng bằng mức phụ phí đó. | Phân tích giá trị biên (BVA) | Bao gồm một tùy chọn cùng cấp không phụ phí làm chuẩn đối chiếu; so sánh giá trị số ở đơn vị nhỏ nhất. |
+|  |  | Giá sản phẩm con không phải là phụ phí tùy chọn | Đặt giá sản phẩm con đơn giản khác nhau nhưng không đặt phụ phí trên sản phẩm cha; xác minh giá sản phẩm cha tuân theo quy tắc giá cấu hình, không tự động thay thế bằng giá sản phẩm con. | Chức năng (Function) | Chỉ kiểm tra sau khi cấu hình fixture được xác nhận trên môi trường Maho cục bộ. |
+|  |  | Duy trì lựa chọn biến thể | Chọn biến thể, thay đổi số lượng và xác minh các tùy chọn đã chọn vẫn được duy trì trước khi thêm vào giỏ. | Chức năng (Function) | Kiểm tra giá trị form đã chọn sau khi tương tác với ô số lượng. |
+|  |  | Thêm biến thể đã chọn vào giỏ | Thêm một tổ hợp Color/Size đã chọn và xác minh dòng giỏ hàng hiển thị đúng các tùy chọn đã chọn. | E2E | Sử dụng SKU cấu hình duy nhất; kiểm tra thuộc tính sản phẩm trong dòng giỏ hàng, không chỉ kiểm tra tên sản phẩm cha. |
+|  |  | Khả năng hiển thị swatch trên danh sách | Xác minh swatch màu/kích thước trên trang danh sách chỉ xuất hiện khi được bật cho store view hiện tại và sản phẩm có biến thể hợp lệ. | Cấu hình (Configuration) | Nếu cấu hình bị tắt thì coi như bỏ qua bước kiểm tra; xác minh việc chọn swatch chuyển đúng sang PDP tương ứng. |
+|  |  | Sản phẩm cha không liên kết biến thể nào | Xóa/hủy liên kết tất cả biến thể và xác minh sản phẩm cha không được hiển thị là có thể mua được. | Phủ định (Negative) | Kiểm tra để đảm bảo không có đường dẫn chọn tùy chọn hợp lệ hoặc thêm vào giỏ hàng. |
+|  | **1.3 Tích hợp Danh mục và Biến thể (Category-to-Variant Integration)** | Gán sản phẩm cấu hình vào danh sách danh mục | Gán sản phẩm cha cấu hình vào một danh mục con lồng nhau đang kích hoạt và xác minh hiển thị duy nhất một thẻ sản phẩm cha trong danh sách danh mục đó. | E2E | Đảm bảo hiển thị/đánh chỉ mục của sản phẩm cha; kiểm tra không bị trùng lặp các thẻ sản phẩm con. |
+|  |  | Truy cập URL trực tiếp của danh mục bị vô hiệu hóa | Mở trực tiếp URL của danh mục đã bị vô hiệu hóa và xác minh phản hồi của storefront (không hiển thị danh sách/chuyển hướng/404) một cách nhất quán. | Phủ định (Negative) | Ghi nhận hành vi mong đợi trên môi trường cục bộ trước khi cố định câu lệnh kiểm tra (assertion). |
+|  |  | Phân cấp thanh điều hướng (Breadcrumb) | Điều hướng qua danh mục lồng nhau → trang PDP sản phẩm cấu hình và xác minh chuỗi breadcrumb phản ánh đúng phả hệ danh mục. | E2E | Sử dụng điều hướng qua menu và kiểm tra nhãn breadcrumb theo đúng thứ tự. |
 
-## 2. Playwright Automation Guidelines
+## 2. Hướng dẫn tự động hóa với Playwright (Playwright Automation Guidelines)
 
-1. Use unique category names and variant SKUs per run; prepare configurable attributes, product associations, stock, and images through fixture setup. The behavior under test remains a browser interaction.
-2. Assert tree relationships through accessible names and parent-child DOM structure. Avoid brittle coordinates and image pixel comparisons.
-3. Wait for the saved category/product result or storefront response/indexed content. Do not depend on arbitrary sleeps or sample entity IDs.
-4. Keep category lifecycle tests separate from configurable variant tests except the explicit integration rows. Cleanup only records created by the run.
-5. Store view, URL suffix, swatch configuration, currency, and stock presentation are installation settings; read them as test configuration and do not hardcode assumptions.
+1. Sử dụng tên danh mục và SKU biến thể duy nhất cho mỗi lượt chạy; chuẩn bị các thuộc tính cấu hình, liên kết sản phẩm, tồn kho và hình ảnh thông qua việc thiết lập fixture. Hành vi được kiểm thử vẫn là tương tác trên trình duyệt.
+2. Kiểm tra mối quan hệ phân cấp cây thông qua tên trợ năng (accessible names) và cấu trúc DOM cha - con. Tránh phụ thuộc vào tọa độ dễ gãy hoặc so sánh pixel hình ảnh.
+3. Chờ kết quả lưu danh mục/sản phẩm hoặc phản hồi/nội dung đã lập chỉ mục trên storefront. Không dựa vào thời gian chờ cố định (`sleep`) hoặc ID thực thể mẫu có sẵn.
+4. Tách biệt các bài kiểm tra vòng đời danh mục khỏi các bài kiểm tra biến thể cấu hình, ngoại trừ các trường hợp tích hợp rõ ràng. Chỉ dọn dẹp các bản ghi do chính lần chạy tạo ra.
+5. Store view, hậu tố URL, cấu hình swatch, đơn vị tiền tệ và cách hiển thị tồn kho là các thiết lập cài đặt; hãy đọc chúng dưới dạng cấu hình kiểm thử và không gắn cứng (hardcode) các giả định.
