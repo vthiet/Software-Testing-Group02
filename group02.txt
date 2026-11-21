@@ -1,0 +1,30 @@
+================================================================================
+FINAL PROJECT – SOFTWARE TESTING: GROUP 02 INFORMATION
+================================================================================
+
+1. Website URL (System Under Test - SUT):
+   https://demo.mahocommerce.com
+
+2. GitHub Repository URL:
+   https://github.com/vthiet/group02-mahocommerce-testing
+
+3. Online Project Documents:
+   - Google Sheets – Test Cases URL:
+     [Điền URL Google Sheets Test Cases chung của nhóm tại đây]
+   - Google Sheets – Task Assignment & Progress URL:
+     [Điền URL Google Sheets Phân công & Tiến độ công việc tại đây]
+   - Google Sheets – Defect List URL:
+     [Điền URL Google Sheets Danh sách Defect chung của nhóm tại đây]
+   - Google Slides – Final Presentation URL:
+     [Điền URL Google Slides Báo cáo thuyết trình chung tại đây]
+   - Google Drive – Test Report & Evidence URL:
+     [Điền URL Thư mục Google Drive chứa Báo cáo & Minh chứng tại đây]
+
+4. Team Members & GitHub Usernames:
+   - Võ Văn Thiết (Leader)           | MSSV: 23130314 | GitHub: vthiet
+   - Nguyễn Hoài Thương              | MSSV: 23130327 | GitHub: Thuong23130327
+   - Phan Bá Huy Hoàng               | MSSV: 23130117 | GitHub: [GitHub_Username]
+   - Vũ Châu Hoài Phong              | MSSV: 23130238 | GitHub: [GitHub_Username]
+   - Thông Lý Tiểu Yến               | MSSV: 23130397 | GitHub: [GitHub_Username]
+
+================================================================================
