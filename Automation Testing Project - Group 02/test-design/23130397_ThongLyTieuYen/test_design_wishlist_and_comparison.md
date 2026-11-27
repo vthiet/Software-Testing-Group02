@@ -22,13 +22,13 @@ Chức năng **Quản lý Danh sách yêu thích của khách hàng (Customer Wi
    - Xóa từng sản phẩm khỏi Wishlist có xác nhận từ hộp thoại trình duyệt (`Remove Confirmation Dialog`).
    - Hiển thị thông báo trạng thái rỗng thân thiện khi Wishlist chưa có sản phẩm (`Empty State Notice`).
 3. **Commerce & Navigation Actions:**
-   - Chuyển một sản phẩm đơn lẻ từ Wishlist vào Giỏ hàng (`Add to Cart Single Item`).
+   - Chuyển sản phẩm trực tiếp từ Wishlist vào Giỏ hàng (`Add to Cart directly from Wishlist`).
    - Chuyển toàn bộ sản phẩm từ Wishlist vào Giỏ hàng cùng lúc (`Add All to Cart`).
    - Điều hướng quay lại trang danh mục mua sắm (`Continue Shopping / Back Link`).
    - Truy cập Wishlist từ menu điều hướng tài khoản cá nhân (`My Account -> My Wishlist`).
 4. **Wishlist Sharing Flow:**
    - Điều hướng đến giao diện chia sẻ danh sách yêu thích qua Email (`/wishlist/index/share/`).
-   - Chia sẻ Wishlist thành công với danh sách nhiều email hợp lệ và nội dung lời nhắn.
+   - Chia sẻ Wishlist thành công với danh sách nhiều email hợp lệ và nội dung lời nhắn, kèm bước xác minh phản hồi người gửi và kiểm tra hộp thư đến phía người nhận.
    - Kiểm tra validation khi để trống danh sách email nhận chia sẻ.
    - Kiểm tra validation khi nhập email sai định dạng.
 5. **Defect, Boundary & Security Testing:**
@@ -49,13 +49,13 @@ Chức năng **Quản lý Danh sách yêu thích của khách hàng (Customer Wi
 | **3.0 Customer Wishlist** | **3.2 Wishlist Item CRUD** | Display Info | **[Wishlist-3]** — Kiểm tra hiển thị thông tin sản phẩm trong trang Wishlist (Tên, Ảnh, Giá) | GUI | Hiển thị đầy đủ tên sản phẩm, hình ảnh thumbnail, đơn giá |
 | **3.0 Customer Wishlist** | **3.2 Wishlist Item CRUD** | Update Qty | **[Wishlist-4]** — Cập nhật số lượng sản phẩm trong Wishlist (Update Quantity) | Function | Cập nhật số lượng và tính lại tổng tiền tương ứng |
 | **3.0 Customer Wishlist** | **3.2 Wishlist Item CRUD** | Item Comment | **[Wishlist-5]** — Thêm nhận xét / ghi chú cho từng sản phẩm trong Danh sách yêu thích (Wishlist Item Comment) | Function | Lưu nội dung văn bản ghi chú thành công cùng sản phẩm |
-| **3.0 Customer Wishlist** | **3.3 Cart Transfer** | Single Add to Cart | **[Wishlist-6]** — Chuyển một sản phẩm đơn lẻ từ Wishlist vào Giỏ hàng (Add to Cart Single Item) | Function | Tiếp nhận lệnh chuyển mặt hàng đơn lẻ sang Shopping Cart |
+| **3.0 Customer Wishlist** | **3.3 Cart Transfer** | Single Add to Cart | **[Wishlist-6]** — Chuyển sản phẩm trực tiếp từ Wishlist vào Giỏ hàng (Add to Cart directly from Wishlist) | Function | Tiếp nhận lệnh chuyển sản phẩm trực tiếp sang Shopping Cart |
 | **3.0 Customer Wishlist** | **3.3 Cart Transfer** | Add All to Cart | **[Wishlist-7]** — Chuyển toàn bộ sản phẩm từ Wishlist vào Giỏ hàng cùng lúc (Add All to Cart) | Function | Chuyển toàn bộ các sản phẩm sang Shopping Cart thành công |
 | **3.0 Customer Wishlist** | **3.4 Wishlist Sharing** | Share Page | **[Wishlist-8]** — Điều hướng đến trang Chia sẻ danh sách yêu thích qua Email (Share Wishlist Page Interface) | GUI | Mở trang form chia sẻ qua email với các trường nhập liệu |
-| **3.0 Customer Wishlist** | **3.4 Wishlist Sharing** | Share Success | **[Wishlist-9]** — Chia sẻ Wishlist thành công với danh sách email hợp lệ và lời nhắn (Share Wishlist Success) | Function | Gửi email chia sẻ thành công và hiển thị thông báo hoàn tất |
+| **3.0 Customer Wishlist** | **3.4 Wishlist Sharing** | Share Success | **[Wishlist-9]** — Chia sẻ Wishlist thành công với danh sách email hợp lệ và lời nhắn (Share Wishlist Success) | Function | Xác minh thông báo phía người gửi ("Your Wishlist has been shared.") và kiểm tra hộp thư người nhận nhận được email chia sẻ |
 | **3.0 Customer Wishlist** | **3.4 Wishlist Sharing** | Empty Email | **[Wishlist-10]** — Kiểm tra bắt lỗi validation khi để trống danh sách email trong form Share Wishlist | Validation | Chặn submit và hiển thị lỗi trường bắt buộc |
 | **3.0 Customer Wishlist** | **3.4 Wishlist Sharing** | Invalid Email | **[Wishlist-11]** — Kiểm tra bắt lỗi validation khi nhập email sai định dạng trong form Share Wishlist | Validation | Chặn submit và hiển thị lỗi sai định dạng email |
-| **3.0 Customer Wishlist** | **3.2 Wishlist Item CRUD** | Remove Item | **[Wishlist-12]** — Xóa 1 sản phẩm khỏi Danh sách yêu thích (Remove Item from Wishlist) | Function | Loại bỏ sản phẩm khỏi bảng danh sách sau khi đồng ý xác nhận |
+| **3.0 Customer Wishlist** | **3.2 Wishlist Item CRUD** | Remove Item | **[Wishlist-12]** — Xóa sản phẩm trực tiếp khỏi Danh sách yêu thích (Remove Item directly from Wishlist) | Function | Loại bỏ sản phẩm khỏi bảng danh sách sau khi đồng ý xác nhận |
 | **3.0 Customer Wishlist** | **3.2 Wishlist Item CRUD** | Confirm Dialog | **[Wishlist-13]** — Kiểm tra hộp thoại xác nhận khi xóa sản phẩm khỏi Wishlist (Remove Confirmation Dialog) | Function / GUI | Hiển thị hộp thoại JavaScript confirm cảnh báo trước khi xóa |
 | **3.0 Customer Wishlist** | **3.2 Wishlist Item CRUD** | Empty State | **[Wishlist-14]** — Kiểm tra thông báo khi Danh sách yêu thích rỗng (Empty State Notice) | GUI | Hiển thị thông báo thân thiện `You have no items in your wishlist.` |
 | **3.0 Customer Wishlist** | **3.5 Navigation Flow** | Back Link | **[Wishlist-15]** — Kiểm tra liên kết quay lại trang mua sắm từ trang Wishlist (Back / Continue Shopping Link) | GUI / Navigation | Điều hướng quay trở lại trang chủ hoặc danh mục trước đó |
