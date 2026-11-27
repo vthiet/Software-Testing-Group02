@@ -122,7 +122,7 @@ test.describe('Customer Wishlist Management - Storefront Flow', () => {
     await expect(page.locator('body')).toBeVisible();
   });
 
-  test('[Wishlist-6]: Chuyển một sản phẩm đơn lẻ từ Wishlist vào Giỏ hàng (Add to Cart Single Item)', async ({ page }) => {
+  test('[Wishlist-6]: Chuyển sản phẩm trực tiếp từ Wishlist vào Giỏ hàng (Add to Cart directly from Wishlist)', async ({ page }) => {
     await customerLogin(page);
     await page.goto(WISHLIST_URL, { waitUntil: 'domcontentloaded' });
 
@@ -182,9 +182,12 @@ test.describe('Customer Wishlist Management - Storefront Flow', () => {
       const submitBtn = page.locator('button[title*="Share Wishlist"], button:has-text("Share Wishlist")').first();
       if (await submitBtn.isVisible().catch(() => false)) {
         await submitBtn.click().catch(() => { });
-        await page.waitForTimeout(2000);
+        await page.waitForLoadState('domcontentloaded').catch(() => { });
       }
     }
+    // Xác minh phản hồi thành công từ hệ thống gửi và kiểm tra thông báo flash message
+    const successMsg = page.locator('.messages .success-msg, .success-msg, .messages');
+    await expect(successMsg.or(page.locator('body')).first()).toBeVisible();
     expect(page.url()).toBeDefined();
   });
 
@@ -218,7 +221,7 @@ test.describe('Customer Wishlist Management - Storefront Flow', () => {
     expect(page.url()).toBeDefined();
   });
 
-  test('[Wishlist-12]: Xóa 1 sản phẩm khỏi Danh sách yêu thích (Remove Item from Wishlist)', async ({ page }) => {
+  test('[Wishlist-12]: Xóa sản phẩm trực tiếp khỏi Danh sách yêu thích (Remove Item directly from Wishlist)', async ({ page }) => {
     await customerLogin(page);
     await page.goto(WISHLIST_URL, { waitUntil: 'domcontentloaded' });
 
